@@ -24,7 +24,7 @@ import soundfile as sf
 from openai import AsyncOpenAI
 
 VLLM_URL = "http://127.0.0.1:8000/v1"
-MODEL = "fixie-ai/ultravox-v0_6-llama-3_1-8b"
+MODEL = "fixie-ai/ultravox-v0_5-llama-3_2-1b"
 
 
 def create_synthetic_audio(duration_sec: float, sr: int = 16000) -> tuple[np.ndarray, int]:
