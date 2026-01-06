@@ -20,7 +20,7 @@ echo "vLLM installed at: $VLLM_PATH"
 echo ""
 echo "Step 2: Cloning fix branch..."
 TEMP_DIR=$(mktemp -d)
-git clone --depth 1 -b fix/ultravox-batching-v2 \
+git clone --depth 1 -b fix/ultravox-batching-v0.13 \
     https://github.com/AndriiPasternak31/vllm.git "$TEMP_DIR/vllm-fix"
 
 # Step 3: Copy fixed files over the installed vLLM
