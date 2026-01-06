@@ -28,7 +28,7 @@ If the install script doesn't work:
 pip install vllm
 
 # Then manually copy the fix files
-git clone -b fix/ultravox-variable-length-audio-batching https://github.com/AndriiPasternak31/vllm.git /tmp/vllm-fix
+git clone -b fix/ultravox-batching-v2 https://github.com/AndriiPasternak31/vllm.git /tmp/vllm-fix
 VLLM_PATH=$(python -c "import vllm; print(vllm.__path__[0])")
 cp /tmp/vllm-fix/vllm/multimodal/inputs.py $VLLM_PATH/multimodal/inputs.py
 cp /tmp/vllm-fix/vllm/model_executor/models/ultravox.py $VLLM_PATH/model_executor/models/ultravox.py
@@ -42,7 +42,7 @@ The bug occurs when sending concurrent audio transcription requests with **diffe
 ValueError: data contains inconsistent shapes: torch.Size([128, 325]) (index 0) vs torch.Size([128, 666]) (index 1)
 ```
 
-The fix introduces `MultiModalListField` that properly handles variable-length audio tensors.
+The fix introduces a new `MultiModalListField` type that returns batch as a list of tensors without stacking/concatenating, allowing the model's `pad_and_concat_to_dim3` to handle padding.
 
 ## Test Options
 
