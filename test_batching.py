@@ -6,8 +6,8 @@ Tests fix for issue #31658: concurrent audio requests with different
 durations crash due to incompatible tensor shapes.
 
 Usage:
-    python test_batching.py                    # Use synthetic audio
-    python test_batching.py --use-dataset      # Use MINDS-14 dataset
+    python test_batching.py                    # Use real speech (MINDS-14 dataset)
+    python test_batching.py --use-synthetic    # Use synthetic audio (no download)
     python test_batching.py --audio-dir /path  # Use local audio files
 """
 
@@ -132,21 +132,24 @@ async def main(args):
             audio, sr = load_from_file(f)
             samples.append((f.name, audio, sr))
 
-    elif args.use_dataset:
-        print("\nLoading from MINDS-14 dataset...")
+    elif args.use_synthetic:
+        print("\nUsing synthetic audio...")
+        for dur in [1.5, 2.5, 4.0, 6.0]:
+            audio, sr = create_synthetic_audio(dur)
+            samples.append((f"synthetic_{dur}s", audio, sr))
+
+    else:
+        # Default: use real audio from MINDS-14 dataset
+        print("\nLoading real speech from MINDS-14 dataset...")
         try:
             for i in [0, 5, 10, 15]:
                 audio, sr = load_from_dataset(i)
                 samples.append((f"minds14_{i}", audio, sr))
         except Exception as e:
-            print(f"Dataset failed: {e}, using synthetic audio")
-            args.use_dataset = False
-
-    if not samples:
-        print("\nUsing synthetic audio...")
-        for dur in [1.5, 2.5, 4.0, 6.0]:
-            audio, sr = create_synthetic_audio(dur)
-            samples.append((f"synthetic_{dur}s", audio, sr))
+            print(f"Dataset failed: {e}, falling back to synthetic audio")
+            for dur in [1.5, 2.5, 4.0, 6.0]:
+                audio, sr = create_synthetic_audio(dur)
+                samples.append((f"synthetic_{dur}s", audio, sr))
 
     # Run tests
     results = []
@@ -200,6 +203,6 @@ async def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--audio-dir", help="Directory with audio files")
-    parser.add_argument("--use-dataset", action="store_true", help="Use MINDS-14 dataset")
+    parser.add_argument("--use-synthetic", action="store_true", help="Use synthetic audio instead of real speech")
     parser.add_argument("--vllm-url", default=VLLM_URL, help="vLLM server URL")
     asyncio.run(main(parser.parse_args()))

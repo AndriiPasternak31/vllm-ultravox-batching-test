@@ -31,11 +31,11 @@ The fix introduces `MultiModalListField` that properly handles variable-length a
 ## Test Options
 
 ```bash
-# Use synthetic audio (default, no download needed)
+# Default: Use real speech from MINDS-14 dataset
 python test_batching.py
 
-# Use real speech from MINDS-14 dataset
-python test_batching.py --use-dataset
+# Use synthetic audio (no download needed)
+python test_batching.py --use-synthetic
 
 # Use your own audio files
 python test_batching.py --audio-dir /path/to/wav/files
