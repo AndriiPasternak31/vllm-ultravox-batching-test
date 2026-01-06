@@ -8,14 +8,30 @@ This project tests the fix for [vLLM issue #31658](https://github.com/vllm-proje
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Install vLLM with the fix
-pip install git+https://github.com/AndriiPasternak31/vllm.git@fix/ultravox-variable-length-audio-batching
+# 2. Install vLLM with the fix (uses pre-built wheel + patches)
+chmod +x install.sh
+./install.sh
 
 # 3. Start vLLM server (in one terminal)
 ./start_server.sh
 
 # 4. Run tests (in another terminal)
 python test_batching.py
+```
+
+## Alternative: Manual Installation
+
+If the install script doesn't work:
+
+```bash
+# Install pre-built vLLM first
+pip install vllm
+
+# Then manually copy the fix files
+git clone -b fix/ultravox-variable-length-audio-batching https://github.com/AndriiPasternak31/vllm.git /tmp/vllm-fix
+VLLM_PATH=$(python -c "import vllm; print(vllm.__path__[0])")
+cp /tmp/vllm-fix/vllm/multimodal/inputs.py $VLLM_PATH/multimodal/inputs.py
+cp /tmp/vllm-fix/vllm/model_executor/models/ultravox.py $VLLM_PATH/model_executor/models/ultravox.py
 ```
 
 ## What This Tests
