@@ -7,34 +7,31 @@ echo "=========================================="
 echo "Installing vLLM with audio batching fix"
 echo "=========================================="
 
-# Step 1: Clone the fix branch first to check its vLLM version
+# Step 1: Install pre-built vLLM first
 echo ""
-echo "Step 1: Cloning fix branch..."
+echo "Step 1: Installing pre-built vLLM..."
+pip uninstall vllm -y 2>/dev/null || true
+pip install vllm
+
+VLLM_PATH=$(python -c "import vllm; print(vllm.__path__[0])")
+echo "vLLM installed at: $VLLM_PATH"
+
+# Step 2: Clone the fix branch
+echo ""
+echo "Step 2: Cloning fix branch..."
 TEMP_DIR=$(mktemp -d)
 git clone --depth 1 -b fix/ultravox-batching-v2 \
     https://github.com/AndriiPasternak31/vllm.git "$TEMP_DIR/vllm-fix"
 
-# Step 2: Install the SAME version of vLLM as the fix branch
+# Step 3: Copy fixed files over the installed vLLM
 echo ""
-echo "Step 2: Installing vLLM from fix branch..."
-cd "$TEMP_DIR/vllm-fix"
+echo "Step 3: Applying fix patches..."
+cp "$TEMP_DIR/vllm-fix/vllm/multimodal/inputs.py" "$VLLM_PATH/multimodal/inputs.py"
+cp "$TEMP_DIR/vllm-fix/vllm/model_executor/models/ultravox.py" "$VLLM_PATH/model_executor/models/ultravox.py"
 
-# Try to install without building (Python-only mode)
-export VLLM_USE_PRECOMPILED=1
-pip install -e . --no-build-isolation 2>/dev/null || {
-    echo "Editable install failed, trying regular install..."
-    # Fall back to installing pre-built vLLM and copying files
-    pip install vllm
-
-    VLLM_PATH=$(python -c "import vllm; print(vllm.__path__[0])")
-    echo "vLLM installed at: $VLLM_PATH"
-
-    echo "Copying fixed multimodal directory..."
-    cp -r "$TEMP_DIR/vllm-fix/vllm/multimodal/"* "$VLLM_PATH/multimodal/"
-    cp "$TEMP_DIR/vllm-fix/vllm/model_executor/models/ultravox.py" "$VLLM_PATH/model_executor/models/ultravox.py"
-}
-
-cd -
+echo "Patched files:"
+echo "  - $VLLM_PATH/multimodal/inputs.py"
+echo "  - $VLLM_PATH/model_executor/models/ultravox.py"
 
 # Cleanup
 rm -rf "$TEMP_DIR"
